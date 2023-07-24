@@ -349,6 +349,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         switch (getClass())
         {
             case CLASS_HUNTER:
+            case CLASS_GUNSLINGER:
                 val2 = level * 2.0f + GetStat(STAT_AGILITY) - 10.0f;
                 break;
             case CLASS_ROGUE:
@@ -382,6 +383,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
             case CLASS_WARRIOR:
                 val2 = level * 3.0f + GetStat(STAT_STRENGTH) * 2.0f - 20.0f;
                 break;
+            case CLASS_GUNSLINGER:
             case CLASS_HUNTER:
             case CLASS_SHAMAN:
             case CLASS_ROGUE:
@@ -709,7 +711,8 @@ const float m_diminishing_k[MAX_CLASSES] =
     0.9830f,  // Mage
     0.9830f,  // Warlock
     0.0f,     // ??
-    0.9720f   // Druid
+    0.9720f,   // Druid
+    0.9880f   // Gunslinger
 };
 
 float Player::GetMissPercentageFromDefence() const
@@ -726,7 +729,8 @@ float Player::GetMissPercentageFromDefence() const
         16.00f,     // Mage    //?
         16.00f,     // Warlock //?
         0.0f,       // ??
-        16.00f      // Druid   //?
+        16.00f,      // Druid   //?
+        16.00f      // Gunslinger
     };
 
     float diminishing = 0.0f, nondiminishing = 0.0f;
@@ -753,7 +757,8 @@ void Player::UpdateParryPercentage()
         0.0f,           // Mage
         0.0f,           // Warlock
         0.0f,           // ??
-        0.0f            // Druid
+        0.0f,           // Druid
+        145.560408f    // Gunslinger
     };
 
     // No parry
@@ -799,7 +804,8 @@ void Player::UpdateDodgePercentage()
         150.375940f,    // Mage
         150.375940f,    // Warlock
         0.0f,           // ??
-        116.890707f     // Druid
+        116.890707f,     // Druid
+        150.375940f    // Gunslinger
     };
 
     float diminishing = 0.0f, nondiminishing = 0.0f;

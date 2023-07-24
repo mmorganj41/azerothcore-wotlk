@@ -16208,6 +16208,7 @@ std::string Player::GetPlayerName()
         case CLASS_SHAMAN:       color = "|cff0070DE"; break;
         case CLASS_WARLOCK:      color = "|cff9482C9"; break;
         case CLASS_WARRIOR:      color = "|cffC79C6E"; break;
+        case CLASS_GUNSLINGER:   color = "|cffFFF569"; break;
     }
 
     return "|Hplayer:" + name + "|h" + color + name + "|h|r";

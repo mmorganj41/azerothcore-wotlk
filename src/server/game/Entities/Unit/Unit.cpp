@@ -6595,6 +6595,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                     triggered_spell_id = RAND(39511, 40997, 40998, 40999, 41002, 41005, 41009, 41011, 41409);
                                     cooldown_spell_id = 39511;
                                     break;
+                                case CLASS_GUNSLINGER:
                                 case CLASS_ROGUE:                   // 39511, 40997, 40998, 41002, 41005, 41011
                                 case CLASS_WARRIOR:                 // 39511, 40997, 40998, 41002, 41005, 41011
                                 case CLASS_DEATH_KNIGHT:
@@ -6790,6 +6791,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                     RandomSpells.push_back(71491);
                                     RandomSpells.push_back(71492);
                                     break;
+                                case CLASS_GUNSLINGER:
                                 case CLASS_SHAMAN:
                                 case CLASS_ROGUE:
                                     RandomSpells.push_back(71486);
@@ -6833,6 +6835,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                     RandomSpells.push_back(71559);
                                     RandomSpells.push_back(71560);
                                     break;
+                                case CLASS_GUNSLINGER:
                                 case CLASS_SHAMAN:
                                 case CLASS_ROGUE:
                                     RandomSpells.push_back(71558);
@@ -7777,6 +7780,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                 case CLASS_WARLOCK:
                                     triggered_spell_id = 28793;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
                                     break;
+                                case CLASS_GUNSLINGER:
                                 case CLASS_HUNTER:
                                 case CLASS_ROGUE:
                                     triggered_spell_id = 28791;     // Increases the friendly target's attack power by $s1 for $d.
@@ -8026,6 +8030,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                 case CLASS_WARLOCK:
                                     triggered_spell_id = 28825;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
                                     break;
+                                case CLASS_GUNSLINGER:
                                 case CLASS_HUNTER:
                                 case CLASS_ROGUE:
                                     triggered_spell_id = 28826;     // Increases the friendly target's attack power by $s1 for $d.
