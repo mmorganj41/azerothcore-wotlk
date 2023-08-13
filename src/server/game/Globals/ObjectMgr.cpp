@@ -4403,6 +4403,13 @@ void ObjectMgr::BuildPlayerLevelInfo(uint8 race, uint8 _class, uint8 level, Play
                 info->stats[STAT_STRENGTH]  += (lvl > 5  ? 1 : 0);
                 info->stats[STAT_STAMINA]   += (lvl > 4  ? 1 : 0);
                 info->stats[STAT_AGILITY]   += (lvl > 16 ? 2 : (lvl > 1 ? 1 : 0));
+                info->stats[STAT_INTELLECT] += (lvl > 24 ? 2 : (lvl > 1 ? 1 : 0));
+                info->stats[STAT_SPIRIT]    += (lvl > 38 ? 1 : (lvl > 9 && !(lvl % 2) ? 1 : 0));
+                break;
+            case CLASS_GUNSLINGER:
+                info->stats[STAT_STRENGTH]  += (lvl > 5  ? 1 : 0);
+                info->stats[STAT_STAMINA]   += (lvl > 4  ? 1 : 0);
+                info->stats[STAT_AGILITY]   += (lvl > 16 ? 2 : (lvl > 1 ? 1 : 0));
                 info->stats[STAT_INTELLECT] += (lvl > 8 && !(lvl % 2) ? 1 : 0);
                 info->stats[STAT_SPIRIT]    += (lvl > 38 ? 1 : (lvl > 9 && !(lvl % 2) ? 1 : 0));
                 break;

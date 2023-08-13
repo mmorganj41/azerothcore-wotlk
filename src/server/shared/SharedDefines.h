@@ -2985,7 +2985,10 @@ enum SkillType
     SKILL_PET_WASP                 = 785,
     SKILL_PET_EXOTIC_RHINO         = 786,
     SKILL_PET_EXOTIC_CORE_HOUND    = 787,
-    SKILL_PET_EXOTIC_SPIRIT_BEAST  = 788
+    SKILL_PET_EXOTIC_SPIRIT_BEAST  = 788,
+    SKILL_DEADEYE                  = 799,
+    SKILL_GRIT                     = 800,
+    SKILL_OUTLAW                   = 801
 };
 
 #define MAX_SKILL_TYPE               789
@@ -3514,7 +3517,7 @@ enum SpellFamilyNames
     SPELLFAMILY_POTION      = 13,
     // 14 - unused
     SPELLFAMILY_DEATHKNIGHT = 15,
-    // 16 - unused
+    SPELLFAMILY_GUNSLINGER  = 16,
     SPELLFAMILY_PET         = 17
 };
 

@@ -1872,7 +1872,7 @@ void Player::Regenerate(Powers power)
             }
             break;
         case POWER_ENERGY:                                  // Regenerate energy (rogue)
-            addvalue += 0.01f * m_regenTimer * sWorld->getRate(RATE_POWER_ENERGY);
+            addvalue += ((getClass() == CLASS_GUNSLINGER) ? .0025f : 0.01f) * m_regenTimer * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         case POWER_RUNIC_POWER:
             {
@@ -16020,6 +16020,9 @@ bool Player::HasCasterSpec()
         case TALENT_TREE_HUNTER_BEAST_MASTERY:
         case TALENT_TREE_HUNTER_MARKSMANSHIP:
         case TALENT_TREE_HUNTER_SURVIVAL:
+        case TALENT_TREE_GUNSLINGER_DEADEYE:
+        case TALENT_TREE_GUNSLINGER_GRIT:
+        case TALENT_TREE_GUNSLINGER_OUTLAW:
             return true;
         default:
             break;

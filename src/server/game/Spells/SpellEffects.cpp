@@ -830,6 +830,23 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
                     unitTarget->CastSpell(unitTarget, 1784, true);
                     return;
                 }
+            // Disappear
+            case 90028:
+                {
+                    unitTarget->RemoveMovementImpairingAuras(true);
+                    unitTarget->RemoveAurasByType(SPELL_AURA_MOD_STALKED);
+
+                    // See if we already are stealthed. If so, we're done.
+                    if (unitTarget->HasAura(90027))
+                        return;
+
+                    // Reset cooldown on stealth if needed
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->ToPlayer()->HasSpellCooldown(90027))
+                        unitTarget->ToPlayer()->RemoveSpellCooldown(90027);
+
+                    unitTarget->CastSpell(unitTarget, 90027, true);
+                    return;
+                }
             // Demonic Empowerment -- succubus
             case 54437:
                 {
@@ -3563,6 +3580,24 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 }
 
                 break;
+            }
+        case SPELLFAMILY_GUNSLINGER:
+            {
+            {
+                // Execute
+                if (m_spellInfo->SpellFamilyFlags[1] & 0x40)
+                {
+                    int32 missinghealth = m_caster->GetMaxHealth() - m_caster->GetHealth();
+
+                    spell_bonus += missinghealth * 35 / 100;
+
+                    if (Aura* aur = unitTarget->GetAura(90000))
+                    {
+                        spell_bonus += (aur->GetStackAmount() - 1) * missinghealth / 100;
+                    }
+                }
+                break;
+            }
             }
     }
 

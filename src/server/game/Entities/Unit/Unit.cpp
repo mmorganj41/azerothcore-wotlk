@@ -930,7 +930,11 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
     }
 
     // Rage from Damage made (only from direct weapon damage)
-    if (attacker && cleanDamage && damagetype == DIRECT_DAMAGE && attacker != victim && attacker->getPowerType() == POWER_RAGE)
+    if (attacker && rage_damage && attacker != victim && attacker->getClass() == CLASS_GUNSLINGER)
+    {
+        attacker->RewardEnergy(rage_damage);
+    }
+    else if (attacker && cleanDamage && damagetype == DIRECT_DAMAGE && attacker != victim && attacker->getPowerType() == POWER_RAGE)
     {
         uint32 weaponSpeedHitFactor;
 
@@ -8617,6 +8621,69 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         }
                     }
                 }
+                break;
+            }
+        case SPELLFAMILY_GUNSLINGER:
+            {
+                switch (dummySpell->Id)
+                {
+                    // Overloading Shots
+                    case 90020:
+                        {
+                            if (effIndex != 0 || !victim)                       // effect 1, 2 used by seal unleashing code
+                                return false;
+
+                            // At ranged attack
+                            bool stacker = !procSpell;
+                            // spells with SPELL_DAMAGE_CLASS
+                            bool damager = procSpell && procSpell->EquippedItemClass != -1;
+
+                            if (!stacker && !damager)
+                                return false;
+
+                            triggered_spell_id = 90022;
+
+                            // On target with 5 stacks of Overload direct damage is done
+                            if (Aura* aur = victim->GetAura(triggered_spell_id, GetGUID()))
+                            {
+                                if (aur->GetStackAmount() == 5)
+                                {
+                                    if (stacker)
+                                        aur->RefreshDuration();
+
+                                    CastSpell(victim, 90021, true, castItem, triggeredByAura);
+                                    return true;
+                                }
+                            }
+
+                            if (!stacker)
+                                return false;
+                            break;
+                        }
+                    // Finisher Trigger
+                    case 90072:
+                        {
+                            if (procSpell->SpellFamilyFlags[2] & 0x4)
+                            {
+                                if (Aura* aur = this->GetAura(90063, GetGUID()))
+                                {
+                                    if (aur->GetStackAmount() == 7)
+                                    {
+                                        int32 basepoints0 = CalculatePct(GetMaxHealth(), dummySpell->Effects[EFFECT_0]. CalcValue());
+                                        CastCustomSpell(this, 90071, &basepoints0, nullptr, nullptr, true);
+                                        CastSpell(this, 90066, true, castItem, triggeredByAura);
+                                        CastSpell(this, 90068, true, castItem, triggeredByAura);
+                                        CastSpell(this, 90069, true, castItem, triggeredByAura);
+                                        CastSpell(this, 90070, true, castItem, triggeredByAura);
+                                        RemoveAurasDueToSpell(90063);
+                                        return true;
+                                    }
+                                    RemoveAurasDueToSpell(90063);
+                                }
+                            }
+                            return false;
+                        }
+                    }
                 break;
             }
         case SPELLFAMILY_POTION:
@@ -20411,6 +20478,23 @@ void Unit::RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker)
     addRage *= sWorld->getRate(RATE_POWER_RAGE_INCOME);
 
     ModifyPower(POWER_RAGE, uint32(addRage * 10));
+}
+
+void Unit::RewardEnergy(uint32 damage)
+{
+    float addEnergy;
+
+    float energyConversion = ((0.0091107836f * GetLevel() * GetLevel()) + 3.225598133f * GetLevel()) + 4.2652911f;
+
+    // Unknown if correct, but lineary adjust rage conversion above level 70
+    if (GetLevel() > 70)
+        energyConversion += 13.27f * (GetLevel() - 70);
+
+    addEnergy = (damage / energyConversion * 1.5f) / 2;
+
+    addEnergy *= sWorld->getRate(RATE_POWER_ENERGY);
+
+    ModifyPower(POWER_ENERGY, uint32(addEnergy * 10));
 }
 
 void Unit::StopAttackFaction(uint32 faction_id)
