@@ -2400,7 +2400,7 @@ public:
     [[nodiscard]] virtual bool CanEnterWater() const = 0;
 
     void RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker);
-    void RewardEnergy(uint32 damage);
+    void RewardMana(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker);
 
     [[nodiscard]] virtual float GetFollowAngle() const { return static_cast<float>(M_PI / 2); }
 

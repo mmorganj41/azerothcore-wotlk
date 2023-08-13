@@ -3581,7 +3581,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
 
                 break;
             }
-        case SPELLFAMILY_GUNSLINGER:
+        case SPELLFAMILY_CATALYST:
             {
             {
                 // Execute

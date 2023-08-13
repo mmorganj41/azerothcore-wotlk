@@ -37,66 +37,14 @@
 //  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
-enum GunslingerSpells
+enum CatalystSpells
 {
     // Ours
 
     // Theirs
 };
 
-// -42243 - Volley (Trigger one)
-class spell_gun_volley_trigger : public SpellScript
+
+void AddSC_catalyst_spell_scripts()
 {
-    PrepareSpellScript(spell_gun_volley_trigger);
-
-    void SelectTarget(std::list<WorldObject*>& targets)
-    {
-        // It's here because Volley is an AOE spell so there is no specific target to be attacked
-        // Let's select one of our targets
-        if (!targets.empty())
-        {
-            _target = *(targets.begin());
-        }
-    }
-
-    void HandleFinish()
-    {
-        if (!_target)
-        {
-            return;
-        }
-
-        Unit* caster = GetCaster();
-        if (!caster || !caster->IsPlayer())
-        {
-            return;
-        }
-
-        for (Unit::ControlSet::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-        {
-            if (Unit* pet = *itr)
-            {
-                if (pet->IsAlive() && pet->GetTypeId() == TYPEID_UNIT)
-                {
-                    pet->ToCreature()->AI()->OwnerAttacked(_target->ToUnit());
-                }
-            }
-        }
-    }
-
-    void Register() override
-    {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_gun_volley_trigger::SelectTarget, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
-        AfterCast += SpellCastFn(spell_gun_volley_trigger::HandleFinish);
-    }
-
-private:
-    WorldObject* _target = nullptr;
-};
-
-
-
-void AddSC_gunslinger_spell_scripts()
-{
-    RegisterSpellScript(spell_gun_volley_trigger);
 }

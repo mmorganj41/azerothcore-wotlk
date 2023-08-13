@@ -2240,8 +2240,8 @@ public:
             case CLASS_DRUID:
                 classStr = "Druid";
                 break;
-            case CLASS_GUNSLINGER:
-                classStr = "Gunslinger";
+            case CLASS_CATALYST:
+                classStr = "CATALYST";
                 break;
         }
 

@@ -930,30 +930,51 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
     }
 
     // Rage from Damage made (only from direct weapon damage)
-    if (attacker && rage_damage && attacker != victim && attacker->getClass() == CLASS_GUNSLINGER)
+    if ( attacker && cleanDamage && damagetype == DIRECT_DAMAGE && attacker != victim)
     {
-        attacker->RewardEnergy(rage_damage);
-    }
-    else if (attacker && cleanDamage && damagetype == DIRECT_DAMAGE && attacker != victim && attacker->getPowerType() == POWER_RAGE)
-    {
-        uint32 weaponSpeedHitFactor;
-
-        switch (cleanDamage->attackType)
+        if ( attacker->getPowerType() == POWER_RAGE)
         {
-            case BASE_ATTACK:
-            case OFF_ATTACK:
-                {
-                    weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType) / 1000.0f * (cleanDamage->attackType == BASE_ATTACK ? 3.5f : 1.75f));
-                    if (cleanDamage->hitOutCome == MELEE_HIT_CRIT)
-                        weaponSpeedHitFactor *= 2;
+            uint32 weaponSpeedHitFactor;
 
-                    attacker->RewardRage(rage_damage, weaponSpeedHitFactor, true);
+            switch (cleanDamage->attackType)
+            {
+                case BASE_ATTACK:
+                case OFF_ATTACK:
+                    {
+                        weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType) / 1000.0f * (cleanDamage->attackType == BASE_ATTACK ? 3.5f : 1.75f));
+                        if (cleanDamage->hitOutCome == MELEE_HIT_CRIT)
+                            weaponSpeedHitFactor *= 2;
+
+                        attacker->RewardRage(rage_damage, weaponSpeedHitFactor, true);
+                        break;
+                    }
+                case RANGED_ATTACK:
                     break;
-                }
-            case RANGED_ATTACK:
-                break;
-            default:
-                break;
+                default:
+                    break;
+            }
+        } 
+        else if (attacker->getClass() == CLASS_CATALYST)
+        {
+            uint32 weaponSpeedHitFactor;
+
+            switch (cleanDamage->attackType)
+            {
+                case BASE_ATTACK:
+                case OFF_ATTACK:
+                    {
+                        weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType) / 1000.0f * (cleanDamage->attackType == BASE_ATTACK ? 3.5f : 1.75f));
+                        if (cleanDamage->hitOutCome == MELEE_HIT_CRIT)
+                            weaponSpeedHitFactor *= 2;
+
+                        attacker->RewardMana(rage_damage, weaponSpeedHitFactor, true);
+                        break;
+                    }
+                case RANGED_ATTACK:
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -963,10 +984,26 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
         if (cleanDamage && cleanDamage->absorbed_damage)
         {
             if (victim->getPowerType() == POWER_RAGE)
+            {
                 victim->RewardRage(cleanDamage->absorbed_damage, 0, false);
+            } 
+            else if (victim->getClass() == CLASS_CATALYST)
+            {
+                victim->RewardMana(cleanDamage->absorbed_damage, 0, false);
+            }
 
-            if (attacker && attacker->getPowerType() == POWER_RAGE )
-                attacker->RewardRage(cleanDamage->absorbed_damage, 0, true);
+            if (attacker)
+            {
+                if (attacker->getPowerType() == POWER_RAGE ) 
+                {
+                    attacker->RewardRage(cleanDamage->absorbed_damage, 0, true);
+                } 
+                else if (attacker->getClass() == CLASS_CATALYST)
+                {
+                    attacker->RewardMana(cleanDamage->absorbed_damage, 0, false);
+                }
+            }
+
         }
 
         return 0;
@@ -1088,11 +1125,20 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
         }
 
         // Rage from damage received
-        if (attacker != victim && victim->getPowerType() == POWER_RAGE)
+        if (attacker != victim)
         {
-            uint32 rageDamage = damage + (cleanDamage ? cleanDamage->absorbed_damage : 0);
-            victim->RewardRage(rageDamage, 0, false);
+            if (victim->getPowerType() == POWER_RAGE)
+            {
+                uint32 rageDamage = damage + (cleanDamage ? cleanDamage->absorbed_damage : 0);
+                victim->RewardRage(rageDamage, 0, false);
+            } 
+            else if (victim->getClass() == CLASS_CATALYST)
+            {
+                uint32 rageDamage = damage + (cleanDamage ? cleanDamage->absorbed_damage : 0);
+                victim->RewardMana(rageDamage, 0, false);
+            }
         }
+
 
         if (attacker && attacker->GetTypeId() == TYPEID_PLAYER)
         {
@@ -6599,7 +6645,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                     triggered_spell_id = RAND(39511, 40997, 40998, 40999, 41002, 41005, 41009, 41011, 41409);
                                     cooldown_spell_id = 39511;
                                     break;
-                                case CLASS_GUNSLINGER:
+                                case CLASS_CATALYST:
                                 case CLASS_ROGUE:                   // 39511, 40997, 40998, 41002, 41005, 41011
                                 case CLASS_WARRIOR:                 // 39511, 40997, 40998, 41002, 41005, 41011
                                 case CLASS_DEATH_KNIGHT:
@@ -6795,7 +6841,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                     RandomSpells.push_back(71491);
                                     RandomSpells.push_back(71492);
                                     break;
-                                case CLASS_GUNSLINGER:
+                                case CLASS_CATALYST:
                                 case CLASS_SHAMAN:
                                 case CLASS_ROGUE:
                                     RandomSpells.push_back(71486);
@@ -6839,7 +6885,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                     RandomSpells.push_back(71559);
                                     RandomSpells.push_back(71560);
                                     break;
-                                case CLASS_GUNSLINGER:
+                                case CLASS_CATALYST:
                                 case CLASS_SHAMAN:
                                 case CLASS_ROGUE:
                                     RandomSpells.push_back(71558);
@@ -7784,7 +7830,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                 case CLASS_WARLOCK:
                                     triggered_spell_id = 28793;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
                                     break;
-                                case CLASS_GUNSLINGER:
+                                case CLASS_CATALYST:
                                 case CLASS_HUNTER:
                                 case CLASS_ROGUE:
                                     triggered_spell_id = 28791;     // Increases the friendly target's attack power by $s1 for $d.
@@ -8034,7 +8080,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                 case CLASS_WARLOCK:
                                     triggered_spell_id = 28825;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
                                     break;
-                                case CLASS_GUNSLINGER:
+                                case CLASS_CATALYST:
                                 case CLASS_HUNTER:
                                 case CLASS_ROGUE:
                                     triggered_spell_id = 28826;     // Increases the friendly target's attack power by $s1 for $d.
@@ -8623,7 +8669,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 }
                 break;
             }
-        case SPELLFAMILY_GUNSLINGER:
+        case SPELLFAMILY_CATALYST:
             {
                 switch (dummySpell->Id)
                 {
@@ -20480,21 +20526,23 @@ void Unit::RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker)
     ModifyPower(POWER_RAGE, uint32(addRage * 10));
 }
 
-void Unit::RewardEnergy(uint32 damage)
+void Unit::RewardMana(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker)
 {
-    float addEnergy;
+    float addMana;
 
-    float energyConversion = ((0.0091107836f * GetLevel() * GetLevel()) + 3.225598133f * GetLevel()) + 4.2652911f;
+    float manaConversion = (3.225598133f * GetLevel()) + 4.2652911f;
+    float maxManaConversion = (GetLevel() < 61) ? (-(0.0000063326f * GetLevel() * GetLevel() * GetLevel()) + (0.0006127599f * GetLevel() * GetLevel()) + (0.0057739152f * GetLevel()) + 0.0440518215f)
+        : ((0.0000017088 * (GetLevel() - 60) * (GetLevel() - 60)) + (0.112544566f * (GetLevel() - 60)) + 1.2441368421f);
 
     // Unknown if correct, but lineary adjust rage conversion above level 70
     if (GetLevel() > 70)
-        energyConversion += 13.27f * (GetLevel() - 70);
+        manaConversion += 13.27f * (GetLevel() - 70);
 
-    addEnergy = (damage / energyConversion * 1.5f) / 2;
+    addMana = (damage / manaConversion * 1.5f * maxManaConversion) / 2 ;
 
-    addEnergy *= sWorld->getRate(RATE_POWER_ENERGY);
+    addMana *= sWorld->getRate(RATE_POWER_MANA);
 
-    ModifyPower(POWER_ENERGY, uint32(addEnergy * 10));
+    ModifyPower(POWER_MANA, uint32(addMana * 10));
 }
 
 void Unit::StopAttackFaction(uint32 faction_id)

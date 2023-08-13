@@ -1872,7 +1872,7 @@ void Player::Regenerate(Powers power)
             }
             break;
         case POWER_ENERGY:                                  // Regenerate energy (rogue)
-            addvalue += ((getClass() == CLASS_GUNSLINGER) ? .0025f : 0.01f) * m_regenTimer * sWorld->getRate(RATE_POWER_ENERGY);
+            addvalue += ((getClass() == CLASS_CATALYST) ? .0025f : 0.01f) * m_regenTimer * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         case POWER_RUNIC_POWER:
             {
@@ -16020,9 +16020,9 @@ bool Player::HasCasterSpec()
         case TALENT_TREE_HUNTER_BEAST_MASTERY:
         case TALENT_TREE_HUNTER_MARKSMANSHIP:
         case TALENT_TREE_HUNTER_SURVIVAL:
-        case TALENT_TREE_GUNSLINGER_DEADEYE:
-        case TALENT_TREE_GUNSLINGER_GRIT:
-        case TALENT_TREE_GUNSLINGER_OUTLAW:
+        case TALENT_TREE_CATALYST_ZEAL:
+        case TALENT_TREE_CATALYST_DEVASTATION:
+        case TALENT_TREE_CATALYST_DISCIPLINE:
             return true;
         default:
             break;
@@ -16211,7 +16211,7 @@ std::string Player::GetPlayerName()
         case CLASS_SHAMAN:       color = "|cff0070DE"; break;
         case CLASS_WARLOCK:      color = "|cff9482C9"; break;
         case CLASS_WARRIOR:      color = "|cffC79C6E"; break;
-        case CLASS_GUNSLINGER:   color = "|cffFFF569"; break;
+        case CLASS_CATALYST:   color = "|cffFFF569"; break;
     }
 
     return "|Hplayer:" + name + "|h" + color + name + "|h|r";

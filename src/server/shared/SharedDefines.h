@@ -121,7 +121,7 @@ enum Classes
     CLASS_WARLOCK       = 9, // TITLE Warlock
     //CLASS_UNK           = 10,
     CLASS_DRUID         = 11,// TITLE Druid
-    CLASS_GUNSLINGER    = 12 // TITLE Gunslinger
+    CLASS_CATALYST    = 12 // TITLE CATALYST
 };
 
 // max+1 for player class
@@ -131,7 +131,7 @@ enum Classes
     ((1<<(CLASS_WARRIOR-1))|(1<<(CLASS_PALADIN-1))|(1<<(CLASS_HUNTER-1))| \
     (1<<(CLASS_ROGUE-1))  |(1<<(CLASS_PRIEST-1)) |(1<<(CLASS_SHAMAN-1))| \
     (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1)) | \
-    (1<<(CLASS_DEATH_KNIGHT-1)) |(1<<(CLASS_GUNSLINGER-1)))
+    (1<<(CLASS_DEATH_KNIGHT-1)) |(1<<(CLASS_CATALYST-1)))
 
 // valid classes for creature_template.unit_class
 enum UnitClass
@@ -3517,7 +3517,7 @@ enum SpellFamilyNames
     SPELLFAMILY_POTION      = 13,
     // 14 - unused
     SPELLFAMILY_DEATHKNIGHT = 15,
-    SPELLFAMILY_GUNSLINGER  = 16,
+    SPELLFAMILY_CATALYST  = 16,
     SPELLFAMILY_PET         = 17
 };
 

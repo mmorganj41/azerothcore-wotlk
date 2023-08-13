@@ -6087,6 +6087,23 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) 
                     }
                     break;
                 }
+            case SPELLFAMILY_CATALYST:
+                {
+                    switch (auraId)
+                    {
+                        // Resolve
+                        case 91000:
+                            {
+                                if (caster)
+                                {
+                                    int32 heal = caster->GetMaxPower(POWER_MANA) * 5 / 100;
+                                    HealInfo healInfo(caster, target, heal, auraSpellInfo, auraSpellInfo->GetSchoolMask());
+                                    caster->HealBySpell(healInfo);
+                                }
+                            }
+                    }
+                    break;
+                }
             default:
                 break;
         }
