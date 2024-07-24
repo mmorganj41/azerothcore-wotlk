@@ -118,9 +118,14 @@ bool Player::UpdateStats(Stats stat)
             UpdateMaxHealth();
             break;
         case STAT_INTELLECT:
-            UpdateMaxPower(POWER_MANA);
-            UpdateAllSpellCritChances();
-            UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
+            if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+                UpdateAllStats();
+            }
+            else {
+                UpdateMaxPower(POWER_MANA);
+                UpdateAllSpellCritChances();
+                UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
+            }
             break;
         default:
             break;
@@ -256,6 +261,9 @@ void Player::UpdateArmor()
     float value = GetModifierValue(unitMod, BASE_VALUE);   // base armor (from items)
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetStat(STAT_AGILITY) * 2.0f;                  // armor bonus from stats
+    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        value += GetStat(STAT_INTELLECT) * 3.0f;
+    }
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
     //add dynamic flat mods
@@ -283,6 +291,16 @@ float Player::GetHealthBonusFromStamina()
     return baseStam + (moreStam * 10.0f);
 }
 
+float Player::GetHealthBonusFromIntellect()
+{
+    float intellect = GetStat(STAT_INTELLECT);
+
+    float baseInt = intellect < 10 ? intellect : 10;
+    float moreInt = intellect - baseInt;
+
+    return baseInt + (moreInt * 15.0f);
+}
+
 float Player::GetManaBonusFromIntellect()
 {
     float intellect = GetStat(STAT_INTELLECT);
@@ -293,6 +311,16 @@ float Player::GetManaBonusFromIntellect()
     return baseInt + (moreInt * 15.0f);
 }
 
+float Player::GetEnergyBonusFromIntellect()
+{
+    float intellect = GetStat(STAT_INTELLECT);
+
+    float baseInt = intellect < 10 ? intellect : 10;
+    float moreInt = intellect - baseInt;
+
+    return baseInt + (moreInt * 20.0f);
+}
+
 void Player::UpdateMaxHealth()
 {
     UnitMods unitMod = UNIT_MOD_HEALTH;
@@ -300,6 +328,9 @@ void Player::UpdateMaxHealth()
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
     value *= GetModifierValue(unitMod, BASE_PCT);
     value += GetModifierValue(unitMod, TOTAL_VALUE) + GetHealthBonusFromStamina();
+    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        value += GetHealthBonusFromIntellect();
+    }
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
     sScriptMgr->OnAfterUpdateMaxHealth(this, value);
@@ -311,6 +342,10 @@ void Player::UpdateMaxPower(Powers power)
     UnitMods unitMod = UnitMods(static_cast<uint16>(UNIT_MOD_POWER_START) + power);
 
     float bonusPower = (power == POWER_MANA && GetCreatePowers(power) > 0) ? GetManaBonusFromIntellect() : 0;
+
+    if (power == POWER_MANA && GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        bonusPower += GetEnergyBonusFromIntellect();
+    }
 
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
     value *= GetModifierValue(unitMod, BASE_PCT);
@@ -468,6 +503,10 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         {
             val2 = GetStat(STAT_STRENGTH) - 10.0f;
         }
+    }
+
+    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        val2 += GetStat(STAT_INTELLECT) * 3.0f;
     }
 
     SetModifierValue(unitMod, BASE_VALUE, val2);
@@ -680,6 +719,9 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
 void Player::UpdateAllCritPercentages()
 {
     float value = GetMeleeCritFromAgility();
+    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        value += GetMeleeCritFromIntellect();
+    }
 
     SetBaseModValue(CRIT_PERCENTAGE, PCT_MOD, value);
     SetBaseModValue(OFFHAND_CRIT_PERCENTAGE, PCT_MOD, value);
@@ -755,9 +797,13 @@ void Player::UpdateParryPercentage()
     uint32 pclass = getClass() - 1;
     if (CanParry() && parry_cap[pclass] > 0.0f)
     {
-        float nondiminishing  = 5.0f;
+        float diminishing = 0.0f, nondiminishing = 0.0f;
+        if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+            GetParryFromIntellect(diminishing, nondiminishing);
+        }
+        nondiminishing  += 5.0f;
         // Parry from rating
-        float diminishing = GetRatingBonusValue(CR_PARRY);
+        diminishing += GetRatingBonusValue(CR_PARRY);
         // Modify value from defense skill (only bonus from defense rating diminishes)
         nondiminishing += (GetSkillValue(SKILL_DEFENSE) - GetMaxSkillValueForLevel()) * 0.04f;
         diminishing += (int32(GetRatingBonusValue(CR_DEFENSE_SKILL))) * 0.04f;

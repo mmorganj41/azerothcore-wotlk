@@ -15254,6 +15254,10 @@ float Unit::GetTotalStatValue(Stats stat, float additionalValue) const
 
     // value = ((base_value * base_pct) + total_value) * total_pct
     float value  = m_auraModifiersGroup[unitMod][BASE_VALUE] + GetCreateStat(stat);
+    if (stat == STAT_INTELLECT && GetTypeId() == TYPEID_PLAYER && GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        value += pow(2.0f, sqrt(GetLevel()));
+    }
+
     value *= m_auraModifiersGroup[unitMod][BASE_PCT];
     value += m_auraModifiersGroup[unitMod][TOTAL_VALUE] + additionalValue;
     value *= m_auraModifiersGroup[unitMod][TOTAL_PCT];

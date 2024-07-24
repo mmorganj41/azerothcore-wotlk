@@ -2277,6 +2277,29 @@ InventoryResult Player::CanUseItem(Item* pItem, bool not_loading) const
                         allowEquip = (itemSkill == SKILL_MAIL);
                     }
                 }
+                // Allow to equip Weapon and Armor if proficiency is learned
+                switch (pProto->Class)
+                {
+                    case ITEM_CLASS_WEAPON:
+                    {
+                        if (pProto->SubClass & GetWeaponProficiency())
+                        {
+                            allowEquip = true;
+                            break;
+                        }
+                    }
+                    case ITEM_CLASS_ARMOR:
+                    {
+                        if (pProto->SubClass & GetArmorProficiency())
+                        {
+                            allowEquip = true;
+                            break;
+                        }
+                    }
+                }
+                if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+                    allowEquip = true;
+                }
                 if (!allowEquip && GetSkillValue(itemSkill) == 0)
                     return EQUIP_ERR_NO_REQUIRED_PROFICIENCY;
             }

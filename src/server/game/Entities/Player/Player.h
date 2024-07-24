@@ -88,6 +88,8 @@ typedef void(*bgZoneRef)(Battleground*, WorldPacket&);
 #define SKILL_PERM_BONUS(x)    int16(PAIR32_HIPART(x))
 #define MAKE_SKILL_BONUS(t, p) MAKE_PAIR32(t, p)
 
+const int MAIN_CHARACTER = 2004;
+
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType
 {
@@ -1915,7 +1917,9 @@ public:
     uint32 GetSpellByProto(ItemTemplate* proto);
 
     float GetHealthBonusFromStamina();
+    float GetHealthBonusFromIntellect();
     float GetManaBonusFromIntellect();
+    float GetEnergyBonusFromIntellect();
 
     bool UpdateStats(Stats stat) override;
     bool UpdateAllStats() override;
@@ -1938,7 +1942,9 @@ public:
     void UpdateDefenseBonusesMod();
     inline void RecalculateRating(CombatRating cr) { ApplyRatingMod(cr, 0, true);}
     float GetMeleeCritFromAgility();
+    float GetMeleeCritFromIntellect();
     void GetDodgeFromAgility(float& diminishing, float& nondiminishing);
+    void GetParryFromIntellect(float& diminishing, float& nondiminishing);
     [[nodiscard]] float GetMissPercentageFromDefence() const;
     float GetSpellCritFromIntellect();
     float OCTRegenHPPerSpirit();
