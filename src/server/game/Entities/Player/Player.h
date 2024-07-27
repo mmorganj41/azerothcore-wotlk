@@ -88,8 +88,6 @@ typedef void(*bgZoneRef)(Battleground*, WorldPacket&);
 #define SKILL_PERM_BONUS(x)    int16(PAIR32_HIPART(x))
 #define MAKE_SKILL_BONUS(t, p) MAKE_PAIR32(t, p)
 
-const int MAIN_CHARACTER = 2004;
-
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType
 {

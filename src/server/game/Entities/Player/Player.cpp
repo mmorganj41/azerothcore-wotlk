@@ -5063,11 +5063,11 @@ float Player::GetMeleeCritFromIntellect()
     if (level > GT_MAX_LEVEL)
         level = GT_MAX_LEVEL;
 
-    GtChanceToMeleeCritEntry     const* critRatio = sGtChanceToMeleeCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+    GtChanceToMeleeCritEntry const* critRatio = sGtChanceToMeleeCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
     if (!critRatio)
         return 0.0f;
 
-    float crit = GetStat(STAT_INTELLECT) * critRatio->ratio * 1.5f;
+    float crit = GetStat(STAT_INTELLECT) * critRatio->ratio * 1.0f;
     return crit * 100.0f;
 }
 
@@ -5187,10 +5187,17 @@ float Player::GetSpellCritFromIntellect()
 
     GtChanceToSpellCritBaseEntry const* critBase  = sGtChanceToSpellCritBaseStore.LookupEntry(pclass - 1);
     GtChanceToSpellCritEntry     const* critRatio = sGtChanceToSpellCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
-    if (!critBase || !critRatio)
+
+    if (GetGUID().GetRawValue() != MAIN_CHARACTER && (!critBase || !critRatio))
         return 0.0f;
 
     float crit = critBase->base + GetStat(STAT_INTELLECT) * critRatio->ratio;
+
+    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        GtChanceToMeleeCritEntry const* critRatioMain = sGtChanceToMeleeCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+        crit += critRatioMain->ratio * GetStat(STAT_INTELLECT);
+    }
+
     return crit * 100.0f;
 }
 

@@ -211,6 +211,9 @@ enum InventorySlot
     NULL_SLOT                  = 255
 };
 
+
+const int MAIN_CHARACTER = 1;
+
 struct FactionTemplateEntry;
 struct SpellValue;
 
@@ -1433,7 +1436,7 @@ public:
     [[nodiscard]] int32 getAttackTimer(WeaponAttackType type) const { return m_attackTimer[type]; }
     [[nodiscard]] bool isAttackReady(WeaponAttackType type = BASE_ATTACK) const { return m_attackTimer[type] <= 0; }
     [[nodiscard]] bool haveOffhandWeapon() const;
-    [[nodiscard]] bool CanDualWield() const { return m_canDualWield || GetGUID().GetRawValue() == 2004; }
+    [[nodiscard]] bool CanDualWield() const { return m_canDualWield || GetGUID().GetRawValue() == MAIN_CHARACTER; }
     virtual void SetCanDualWield(bool value) { m_canDualWield = value; }
     [[nodiscard]] float GetCombatReach() const override { return m_floatValues[UNIT_FIELD_COMBATREACH]; }
     [[nodiscard]] float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
