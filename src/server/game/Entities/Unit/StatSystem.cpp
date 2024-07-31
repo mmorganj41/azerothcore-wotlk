@@ -116,6 +116,9 @@ bool Player::UpdateStats(Stats stat)
             break;
         case STAT_STAMINA:
             UpdateMaxHealth();
+            if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+                UpdateStats(STAT_INTELLECT);
+            }
             break;
         case STAT_INTELLECT:
             if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
@@ -262,7 +265,7 @@ void Player::UpdateArmor()
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetStat(STAT_AGILITY) * 2.0f;                  // armor bonus from stats
     if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        value += GetStat(STAT_INTELLECT) * 2.0f;
+        value += GetStat(STAT_INTELLECT) * 1.0f;
     }
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
@@ -291,16 +294,6 @@ float Player::GetHealthBonusFromStamina()
     return baseStam + (moreStam * 10.0f);
 }
 
-float Player::GetHealthBonusFromIntellect()
-{
-    float intellect = GetStat(STAT_INTELLECT);
-
-    float baseInt = intellect < 10 ? intellect : 10;
-    float moreInt = intellect - baseInt;
-
-    return baseInt + (moreInt * 5.0f);
-}
-
 float Player::GetManaBonusFromIntellect()
 {
     float intellect = GetStat(STAT_INTELLECT);
@@ -318,7 +311,7 @@ float Player::GetEnergyBonusFromIntellect()
     float baseInt = intellect < 10 ? intellect : 10;
     float moreInt = intellect - baseInt;
 
-    return baseInt + (moreInt * 10.0f);
+    return baseInt + (moreInt * 7.5f);
 }
 
 void Player::UpdateMaxHealth()
@@ -328,9 +321,6 @@ void Player::UpdateMaxHealth()
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
     value *= GetModifierValue(unitMod, BASE_PCT);
     value += GetModifierValue(unitMod, TOTAL_VALUE) + GetHealthBonusFromStamina();
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        value += GetHealthBonusFromIntellect();
-    }
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
     sScriptMgr->OnAfterUpdateMaxHealth(this, value);
@@ -506,7 +496,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     }
 
     if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        val2 += GetStat(STAT_INTELLECT) * 3.0f;
+        val2 += GetStat(STAT_INTELLECT) * 1.5f;
     }
 
     SetModifierValue(unitMod, BASE_VALUE, val2);
@@ -892,7 +882,6 @@ void Player::UpdateSpellCritChance(uint32 school)
 
 void Player::UpdateArmorPenetration(int32 amount)
 {
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) amount += GetStat(STAT_INTELLECT) / 4;
     // Store Rating Value
     SetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + static_cast<uint16>(CR_ARMOR_PENETRATION), amount);
 }
@@ -900,21 +889,18 @@ void Player::UpdateArmorPenetration(int32 amount)
 void Player::UpdateMeleeHitChances()
 {
     m_modMeleeHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) m_modMeleeHitChance += GetStat(STAT_INTELLECT) * .025f;
     m_modMeleeHitChance += GetRatingBonusValue(CR_HIT_MELEE);
 }
 
 void Player::UpdateRangedHitChances()
 {
     m_modRangedHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) m_modRangedHitChance += GetStat(STAT_INTELLECT) * .025f;
     m_modRangedHitChance += GetRatingBonusValue(CR_HIT_RANGED);
 }
 
 void Player::UpdateSpellHitChances()
 {
     m_modSpellHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_HIT_CHANCE);
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) m_modSpellHitChance += GetStat(STAT_INTELLECT) * .025f;
     m_modSpellHitChance += GetRatingBonusValue(CR_HIT_SPELL);
 }
 
@@ -946,8 +932,6 @@ void Player::UpdateExpertise(WeaponAttackType attack)
 
     if (expertise < 0)
         expertise = 0;
-
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) expertise += GetStat(STAT_INTELLECT) / 4;
 
     switch (attack)
     {

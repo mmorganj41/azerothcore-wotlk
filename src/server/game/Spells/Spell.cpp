@@ -5298,7 +5298,7 @@ void Spell::TakePower()
         if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_POWER))
             return;
         if (m_caster->GetGUID().GetRawValue() == MAIN_CHARACTER) {
-            if (PowerType == POWER_ENERGY && m_powerCost) m_powerCost *= 5;
+            if (PowerType == POWER_RAGE && m_powerCost) m_powerCost /= 3;
             PowerType = POWER_MANA;
         }
     }
@@ -5711,11 +5711,12 @@ SpellCastResult Spell::CheckCast(bool strict)
             checkForm = false;
             break;
         }
+
         if (checkForm)
         {
             // Cannot be used in this stance/form
             SpellCastResult shapeError = m_spellInfo->CheckShapeshift(m_caster->GetShapeshiftForm());
-            if (shapeError != SPELL_CAST_OK)
+            if (shapeError != SPELL_CAST_OK && m_caster->GetGUID().GetRawValue() != MAIN_CHARACTER)
                 return shapeError;
 
             if (m_spellInfo->HasAttribute(SPELL_ATTR0_ONLY_STEALTHED) && !(m_caster->HasStealthAura()))

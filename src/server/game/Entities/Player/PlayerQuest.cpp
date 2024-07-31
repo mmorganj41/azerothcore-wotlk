@@ -1084,7 +1084,7 @@ bool Player::SatisfyQuestClass(Quest const* qInfo, bool msg) const
 {
     uint32 reqClass = qInfo->GetRequiredClasses();
 
-    if (reqClass == 0)
+    if (reqClass == 0 || GetGUID().GetRawValue() == MAIN_CHARACTER)
         return true;
 
     if ((reqClass & getClassMask()) == 0)
@@ -1101,7 +1101,7 @@ bool Player::SatisfyQuestClass(Quest const* qInfo, bool msg) const
 bool Player::SatisfyQuestRace(Quest const* qInfo, bool msg) const
 {
     uint32 reqraces = qInfo->GetAllowableRaces();
-    if (reqraces == 0)
+    if (reqraces == 0 || GetGUID().GetRawValue() == MAIN_CHARACTER)
         return true;
     if ((reqraces & getRaceMask()) == 0)
     {

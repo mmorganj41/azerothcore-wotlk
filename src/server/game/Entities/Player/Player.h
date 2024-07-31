@@ -1915,7 +1915,6 @@ public:
     uint32 GetSpellByProto(ItemTemplate* proto);
 
     float GetHealthBonusFromStamina();
-    float GetHealthBonusFromIntellect();
     float GetManaBonusFromIntellect();
     float GetEnergyBonusFromIntellect();
 

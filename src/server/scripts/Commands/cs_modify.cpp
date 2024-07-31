@@ -71,7 +71,8 @@ public:
             { "standstate",     HandleModifyStandStateCommand,    SEC_GAMEMASTER,       Console::No },
             { "phase",          HandleModifyPhaseCommand,         SEC_GAMEMASTER,       Console::No },
             { "gender",         HandleModifyGenderCommand,        SEC_GAMEMASTER,       Console::No },
-            { "speed",          modifyspeedCommandTable }
+            { "speed",          modifyspeedCommandTable },
+            { "bonustalent",    HandleModifyBonusTalentCommand,   SEC_ADMINISTRATOR,    Console::No },
         };
 
         static ChatCommandTable morphCommandTable =
@@ -378,6 +379,38 @@ public:
                 owner->ToPlayer()->SendTalentsInfoData(true);
                 return true;
             }
+        }
+
+        handler->SendErrorMessage(LANG_NO_CHAR_SELECTED);
+        return false;
+    }
+
+    //Edit Player TP
+    static bool HandleModifyBonusTalentCommand(ChatHandler* handler, uint32 talentPoints)
+    {
+        if (!talentPoints)
+        {
+            return false;
+        }
+
+        Unit* target = handler->getSelectedUnit();
+        if (!target)
+        {
+            handler->SendErrorMessage(LANG_NO_CHAR_SELECTED);
+            return false;
+        }
+
+        if (target->GetTypeId() == TYPEID_PLAYER)
+        {
+            // check online security
+            if (handler->HasLowerSecurity(target->ToPlayer()))
+            {
+                return false;
+            }
+
+            target->ToPlayer()->RewardExtraBonusTalentPoints(talentPoints);
+            target->ToPlayer()->SendTalentsInfoData(false);
+            return true;
         }
 
         handler->SendErrorMessage(LANG_NO_CHAR_SELECTED);

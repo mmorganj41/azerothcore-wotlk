@@ -5040,7 +5040,11 @@ float Player::GetTotalBaseModValue(BaseModGroup modGroup) const
 
 uint32 Player::GetShieldBlockValue() const
 {
-    float value = (m_auraBaseMod[SHIELD_BLOCK_VALUE][FLAT_MOD] + GetStat(STAT_STRENGTH) * 0.5f - 10) * m_auraBaseMod[SHIELD_BLOCK_VALUE][PCT_MOD];
+    float value = m_auraBaseMod[SHIELD_BLOCK_VALUE][FLAT_MOD] + GetStat(STAT_STRENGTH) * 0.5f - 10;
+
+    if (GetGUID().GetRawValue() == MAIN_CHARACTER) value += GetStat(STAT_INTELLECT) * 0.5f;
+
+    value *= m_auraBaseMod[SHIELD_BLOCK_VALUE][PCT_MOD];
 
     value = (value < 0) ? 0 : value;
 
@@ -5076,7 +5080,7 @@ float Player::GetMeleeCritFromIntellect()
     if (!critRatio)
         return 0.0f;
 
-    float crit = GetStat(STAT_INTELLECT) * critRatio->ratio * 1.0f;
+    float crit = GetStat(STAT_INTELLECT) * critRatio->ratio * 0.5f;
     return crit * 100.0f;
 }
 
@@ -5182,8 +5186,8 @@ void Player::GetParryFromIntellect(float& diminishing, float& nondiminishing)
     float bonus_intellect = GetStat(STAT_INTELLECT) - base_intellect;
 
     // calculate diminishing (green in char screen) and non-diminishing (white) contribution
-    diminishing = 100.0f * bonus_intellect * parryRatio->ratio * crit_to_parry[pclass - 1];
-    nondiminishing = 100.0f * (parry_base[pclass - 1] + base_intellect * parryRatio->ratio * crit_to_parry[pclass - 1]);
+    diminishing = 50.0f * bonus_intellect * parryRatio->ratio * crit_to_parry[pclass - 1];
+    nondiminishing = 50.0f * (parry_base[pclass - 1] + base_intellect * parryRatio->ratio * crit_to_parry[pclass - 1]);
 }
 
 float Player::GetSpellCritFromIntellect()
@@ -5204,7 +5208,7 @@ float Player::GetSpellCritFromIntellect()
 
     if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
         GtChanceToMeleeCritEntry const* critRatioMain = sGtChanceToMeleeCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
-        crit += critRatioMain->ratio * GetStat(STAT_INTELLECT);
+        crit += 0.5f * critRatioMain->ratio * GetStat(STAT_INTELLECT);
     }
 
     return crit * 100.0f;
