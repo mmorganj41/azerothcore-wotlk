@@ -108,11 +108,17 @@ bool Player::UpdateStats(Stats stat)
     {
         case STAT_STRENGTH:
             UpdateShieldBlockValue();
+            if (m_specialCharacter) {
+                UpdateStats(STAT_SPIRIT);
+            }
             break;
         case STAT_AGILITY:
             UpdateArmor();
             UpdateAllCritPercentages();
             UpdateDodgePercentage();
+            if (m_specialCharacter) {
+                UpdateStats(STAT_SPIRIT);
+            }
             break;
         case STAT_STAMINA:
             UpdateMaxHealth();
@@ -660,6 +666,9 @@ void Player::UpdateBlockPercentage()
         value = 5.0f;
         // Modify value from defense skill
         value += (int32(GetDefenseSkillValue()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
+        if (m_specialCharacter) {
+            value += 0.1f * GetStat(STAT_SPIRIT) / GetLevel();
+        }
         // Increase from SPELL_AURA_MOD_BLOCK_PERCENT aura
         value += GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
         // Increase from rating
@@ -793,7 +802,7 @@ void Player::UpdateParryPercentage()
     float value = 0.0f;
     m_realParry = 0.0f;
     uint32 pclass = getClass() - 1;
-    if (CanParry() && parry_cap[pclass] > 0.0f)
+    if ((CanParry() && parry_cap[pclass] > 0.0f) || m_specialCharacter)
     {
         float diminishing = 0.0f, nondiminishing = 0.0f;
         if (m_specialCharacter) {
@@ -900,18 +909,27 @@ void Player::UpdateArmorPenetration(int32 amount)
 void Player::UpdateMeleeHitChances()
 {
     m_modMeleeHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
+    if (m_specialCharacter) {
+        m_modMeleeHitChance += 0.1f * GetStat(STAT_SPIRIT) / GetLevel();
+    }
     m_modMeleeHitChance += GetRatingBonusValue(CR_HIT_MELEE);
 }
 
 void Player::UpdateRangedHitChances()
 {
     m_modRangedHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
+    if (m_specialCharacter) {
+        m_modMeleeHitChance += 0.1f * GetStat(STAT_SPIRIT) / GetLevel();
+    }
     m_modRangedHitChance += GetRatingBonusValue(CR_HIT_RANGED);
 }
 
 void Player::UpdateSpellHitChances()
 {
     m_modSpellHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_HIT_CHANCE);
+    if (m_specialCharacter) {
+        m_modMeleeHitChance += 0.1f * GetStat(STAT_SPIRIT) / GetLevel();
+    }
     m_modSpellHitChance += GetRatingBonusValue(CR_HIT_SPELL);
 }
 

@@ -2150,11 +2150,11 @@ public:
     void SendCorpseReclaimDelay(uint32 delay);
 
     [[nodiscard]] uint32 GetShieldBlockValue() const override;                 // overwrite Unit version (virtual)
-    [[nodiscard]] bool CanParry() const { return m_canParry; }
+    [[nodiscard]] bool CanParry() const { return m_canParry || m_specialCharacter; }
     void SetCanParry(bool value);
-    [[nodiscard]] bool CanBlock() const { return m_canBlock; }
+    [[nodiscard]] bool CanBlock() const { return m_canBlock || m_specialCharacter; }
     void SetCanBlock(bool value);
-    [[nodiscard]] bool CanTitanGrip() const { return m_canTitanGrip; }
+    [[nodiscard]] bool CanTitanGrip() const { return m_canTitanGrip || m_specialCharacter; }
     void SetCanTitanGrip(bool value);
     [[nodiscard]] bool CanTameExoticPets() const { return IsGameMaster() || HasAuraType(SPELL_AURA_ALLOW_TAME_PET_TYPE); }
 

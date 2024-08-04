@@ -3267,7 +3267,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
             return SPELL_MISS_DODGE;
     }
 
-    if (canParry)
+    if (canParry || m_specialCharacter)
     {
         // Roll parry
         int32 parryChance = int32(victim->GetUnitParryChance() * 100.0f)  - skillDiff * 4;
@@ -3286,7 +3286,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
             return SPELL_MISS_PARRY;
     }
 
-    if (canBlock)
+    if (canBlock || m_specialCharacter)
     {
         int32 blockChance = int32(victim->GetUnitBlockChance() * 100.0f) - skillDiff * 4;
 
@@ -3684,7 +3684,7 @@ float Unit::GetUnitBlockChance() const
         if (player->CanBlock())
         {
             Item* tmpitem = player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            if (tmpitem && !tmpitem->IsBroken() && tmpitem->GetTemplate()->Block)
+            if (m_specialCharacter || (tmpitem && !tmpitem->IsBroken() && tmpitem->GetTemplate()->Block))
                 return GetFloatValue(PLAYER_BLOCK_PERCENTAGE);
         }
         // is player but has no block ability or no not broken shield equipped
@@ -15262,8 +15262,9 @@ float Unit::GetTotalStatValue(Stats stat, float additionalValue) const
 
     // value = ((base_value * base_pct) + total_value) * total_pct
     float value  = m_auraModifiersGroup[unitMod][BASE_VALUE] + GetCreateStat(stat);
-    if (stat == STAT_SPIRIT && GetTypeId() == TYPEID_PLAYER && m_specialCharacter) {
-        value += 0.5f * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT));
+    if (stat == STAT_SPIRIT && m_specialCharacter) {
+        value *= 1.5f;
+        value += 0.5f * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT) + GetStat(STAT_STRENGTH) + GetStat(STAT_AGILITY));
     }
 
     value *= m_auraModifiersGroup[unitMod][BASE_PCT];

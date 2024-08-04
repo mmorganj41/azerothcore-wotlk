@@ -5180,12 +5180,12 @@ void Player::GetParryFromSpirit(float& diminishing, float& nondiminishing)
         return;
 
     /// @todo: research if talents/effects that increase total intellect by x% should increase non-diminishing part
-    float base_intellect = GetCreateStat(STAT_INTELLECT) * m_auraModifiersGroup[UNIT_MOD_STAT_START + static_cast<uint16>(STAT_INTELLECT)][BASE_PCT];
-    float bonus_intellect = GetStat(STAT_INTELLECT) - base_intellect;
+    float base_spirit = GetCreateStat(STAT_SPIRIT) * m_auraModifiersGroup[UNIT_MOD_STAT_START + static_cast<uint16>(STAT_SPIRIT)][BASE_PCT];
+    float bonus_spirit = GetStat(STAT_SPIRIT) - base_spirit;
 
     // calculate diminishing (green in char screen) and non-diminishing (white) contribution
-    diminishing = 50.0f * bonus_intellect * parryRatio->ratio * crit_to_parry[pclass - 1];
-    nondiminishing = 50.0f * (parry_base[pclass - 1] + base_intellect * parryRatio->ratio * crit_to_parry[pclass - 1]);
+    diminishing = 25.0f * bonus_spirit * parryRatio->ratio * crit_to_parry[pclass - 1];
+    nondiminishing = 25.0f * (parry_base[pclass - 1] + base_spirit * parryRatio->ratio * crit_to_parry[pclass - 1]);
 }
 
 float Player::GetSpellCritFromIntellect()
