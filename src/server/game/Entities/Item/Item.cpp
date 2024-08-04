@@ -330,7 +330,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
         return;
     }
 
-    SetUInt32Value(ITEM_FIELD_DURATION, GetUInt32Value(ITEM_FIELD_DURATION) - diff);
+    SetUInt32Value(ITEM_FIELD_DURATION, owner->m_specialCharacter ? GetUInt32Value(ITEM_FIELD_DURATION) : GetUInt32Value(ITEM_FIELD_DURATION) - diff);
     SetState(ITEM_CHANGED, owner);                          // save new time in database
 }
 

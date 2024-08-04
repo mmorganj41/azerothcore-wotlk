@@ -241,6 +241,7 @@ Unit::Unit(bool isWorldObject) : WorldObject(isWorldObject),
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
 
     m_canDualWield = false;
+    m_specialCharacter = false;
 
     m_rootTimes = 0;
 
@@ -1101,7 +1102,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
 
         if (damagetype != NODAMAGE && damage && (!spellProto || !(spellProto->HasAttribute(SPELL_ATTR3_TREAT_AS_PERIODIC) || spellProto->HasAttribute(SPELL_ATTR7_DONT_CAUSE_SPELL_PUSHBACK))))
         {
-            if (victim != attacker && victim->GetTypeId() == TYPEID_PLAYER) // does not support creature push_back
+            if (victim != attacker && victim->GetTypeId() == TYPEID_PLAYER && !victim->m_specialCharacter) // does not support creature push_back
             {
                 if (damagetype != DOT && !(damageSpell && damageSpell->m_targets.HasDstChannel()))
                 {
@@ -1122,7 +1123,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
                     }
 
                     if (Spell* spell = victim->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                        if (spell->getState() == SPELL_STATE_CASTING)
+                        if (!victim->m_specialCharacter && spell->getState() == SPELL_STATE_CASTING)
                         {
                             if ((spell->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_DELAY) != 0)
                             {
@@ -2817,7 +2818,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(Unit const* victim, WeaponAttackTy
     // Dodge chance
 
     // only players can't dodge if attacker is behind
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->GetGUID().GetRawValue() != MAIN_CHARACTER && !victim->HasInArc(M_PI, this) && !victim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
+    if (victim->GetTypeId() == TYPEID_PLAYER && !victim->m_specialCharacter && !victim->HasInArc(M_PI, this) && !victim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
     {
         //LOG_DEBUG("entities.unit", "RollMeleeOutcomeAgainst: attack came from behind and victim was a player.");
     }
@@ -2852,7 +2853,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(Unit const* victim, WeaponAttackTy
     // parry & block chances
 
     // check if attack comes from behind, nobody can parry or block if attacker is behind
-    if (!victim->HasInArc(M_PI, this) && !victim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION) && victim->GetGUID().GetRawValue() != MAIN_CHARACTER)
+    if (!victim->HasInArc(M_PI, this) && !victim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION) && !victim->m_specialCharacter)
     {
         LOG_DEBUG("entities.unit", "RollMeleeOutcomeAgainst: attack came from behind.");
     }
@@ -5162,7 +5163,7 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except, bool isAuto
     // interrupt channeled spell
     if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
     {
-        if (spell->getState() == SPELL_STATE_CASTING && (spell->m_spellInfo->ChannelInterruptFlags & flag) && spell->m_spellInfo->Id != except)
+        if (!m_specialCharacter && spell->getState() == SPELL_STATE_CASTING && (spell->m_spellInfo->ChannelInterruptFlags & flag) && spell->m_spellInfo->Id != except)
         {
             // Do not interrupt if auto shot
             if (!(isAutoshot && spell->m_spellInfo->HasAttribute(SPELL_ATTR2_DO_NOT_RESET_COMBAT_TIMERS)))
@@ -12253,7 +12254,7 @@ uint32 Unit::SpellCriticalDamageBonus(Unit const* caster, SpellInfo const* spell
             crit_bonus += damage;
             break;
         default:
-            crit_bonus += damage / 2;                       // for spells is 50%
+            crit_bonus += caster->m_specialCharacter ? damage : damage / 2;                       // for spells is 50%
             break;
     }
 
@@ -12291,7 +12292,7 @@ uint32 Unit::SpellCriticalHealingBonus(Unit const* caster, SpellInfo const* spel
             crit_bonus = damage;
             break;
         default:
-            crit_bonus = damage / 2;                        // for spells is 50%
+            crit_bonus = caster->m_specialCharacter ? damage : damage / 2;                        // for spells is 50%
             break;
     }
 
@@ -15261,8 +15262,8 @@ float Unit::GetTotalStatValue(Stats stat, float additionalValue) const
 
     // value = ((base_value * base_pct) + total_value) * total_pct
     float value  = m_auraModifiersGroup[unitMod][BASE_VALUE] + GetCreateStat(stat);
-    if (stat == STAT_INTELLECT && GetTypeId() == TYPEID_PLAYER && GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        value += 0.5f * GetStat(STAT_STAMINA);
+    if (stat == STAT_SPIRIT && GetTypeId() == TYPEID_PLAYER && m_specialCharacter) {
+        value += 0.5f * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT));
     }
 
     value *= m_auraModifiersGroup[unitMod][BASE_PCT];

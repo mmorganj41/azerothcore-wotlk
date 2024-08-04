@@ -2251,7 +2251,7 @@ uint8 Pet::GetMaxTalentPointsForLevel(uint8 level)
     // Mod points from owner SPELL_AURA_MOD_PET_TALENT_POINTS
     if (Unit* owner = GetOwner()) {
         points += owner->GetTotalAuraModifier(SPELL_AURA_MOD_PET_TALENT_POINTS);
-        if (owner->GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        if (owner->m_specialCharacter) {
             points += level / 4;
         }
     }

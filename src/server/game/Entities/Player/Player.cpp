@@ -5040,7 +5040,7 @@ uint32 Player::GetShieldBlockValue() const
 {
     float value = m_auraBaseMod[SHIELD_BLOCK_VALUE][FLAT_MOD] + GetStat(STAT_STRENGTH) * 0.5f - 10;
 
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) value += GetStat(STAT_INTELLECT) * 0.5f;
+    if (m_specialCharacter) value += GetStat(STAT_SPIRIT) * 0.5f;
 
     value *= m_auraBaseMod[SHIELD_BLOCK_VALUE][PCT_MOD];
 
@@ -5066,7 +5066,7 @@ float Player::GetMeleeCritFromAgility()
     return crit * 100.0f;
 }
 
-float Player::GetMeleeCritFromIntellect()
+float Player::GetMeleeCritFromSpirit()
 {
     uint8 level = GetLevel();
     uint32 pclass = getClass();
@@ -5078,7 +5078,7 @@ float Player::GetMeleeCritFromIntellect()
     if (!critRatio)
         return 0.0f;
 
-    float crit = GetStat(STAT_INTELLECT) * critRatio->ratio * 0.5f;
+    float crit = GetStat(STAT_SPIRIT) * critRatio->ratio * 0.3f;
     return crit * 100.0f;
 }
 
@@ -5135,7 +5135,7 @@ void Player::GetDodgeFromAgility(float& diminishing, float& nondiminishing)
     nondiminishing = 100.0f * (dodge_base[pclass - 1] + base_agility * dodgeRatio->ratio * crit_to_dodge[pclass - 1]);
 }
 
-void Player::GetParryFromIntellect(float& diminishing, float& nondiminishing)
+void Player::GetParryFromSpirit(float& diminishing, float& nondiminishing)
 {
     // Table for base parry values
     const float parry_base[MAX_CLASSES] =
@@ -5199,16 +5199,28 @@ float Player::GetSpellCritFromIntellect()
     GtChanceToSpellCritBaseEntry const* critBase  = sGtChanceToSpellCritBaseStore.LookupEntry(pclass - 1);
     GtChanceToSpellCritEntry     const* critRatio = sGtChanceToSpellCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
 
-    if (GetGUID().GetRawValue() != MAIN_CHARACTER && (!critBase || !critRatio))
+    if (!critBase || !critRatio)
         return 0.0f;
 
     float crit = critBase->base + GetStat(STAT_INTELLECT) * critRatio->ratio;
 
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        GtChanceToMeleeCritEntry const* critRatioMain = sGtChanceToMeleeCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
-        crit += 0.5f * critRatioMain->ratio * GetStat(STAT_INTELLECT);
-    }
+    return crit * 100.0f;
+}
 
+float Player::GetSpellCritFromSpirit()
+{
+    uint8 level = GetLevel();
+    uint32 pclass = getClass();
+
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
+
+    GtChanceToMeleeCritEntry const* critRatioMelee = sGtChanceToMeleeCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+    GtChanceToSpellCritEntry const* critRatioSpell = sGtChanceToSpellCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+
+    float critRatio = critRatioMelee->ratio > critRatioSpell->ratio ? critRatioMelee->ratio : critRatioSpell->ratio;
+
+    float crit = GetStat(STAT_SPIRIT) * critRatio * 0.5f;
     return crit * 100.0f;
 }
 
@@ -14841,6 +14853,7 @@ void Player::_SaveCharacter(bool create, CharacterDatabaseTransaction trans)
         stmt->SetData(index++, m_grantableLevels);
         stmt->SetData(index++, _innTriggerId);
         stmt->SetData(index++, m_extraBonusTalentCount);
+        stmt->SetData(index++, m_specialCharacter);
     }
     else
     {
@@ -14981,6 +14994,7 @@ void Player::_SaveCharacter(bool create, CharacterDatabaseTransaction trans)
         stmt->SetData(index++, m_grantableLevels);
         stmt->SetData(index++, _innTriggerId);
         stmt->SetData(index++, m_extraBonusTalentCount);
+        stmt->SetData(index++, m_specialCharacter);
 
         stmt->SetData(index++, IsInWorld() && !GetSession()->PlayerLogout() ? 1 : 0);
         // Index

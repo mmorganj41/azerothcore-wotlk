@@ -210,9 +210,6 @@ enum InventorySlot
     NULL_SLOT                  = 255
 };
 
-
-const int MAIN_CHARACTER = 1;
-
 struct FactionTemplateEntry;
 struct SpellValue;
 
@@ -1435,7 +1432,7 @@ public:
     [[nodiscard]] int32 getAttackTimer(WeaponAttackType type) const { return m_attackTimer[type]; }
     [[nodiscard]] bool isAttackReady(WeaponAttackType type = BASE_ATTACK) const { return m_attackTimer[type] <= 0; }
     [[nodiscard]] bool haveOffhandWeapon() const;
-    [[nodiscard]] bool CanDualWield() const { return m_canDualWield || GetGUID().GetRawValue() == MAIN_CHARACTER; }
+    [[nodiscard]] bool CanDualWield() const { return m_canDualWield || m_specialCharacter; }
     virtual void SetCanDualWield(bool value) { m_canDualWield = value; }
     [[nodiscard]] float GetCombatReach() const override { return m_floatValues[UNIT_FIELD_COMBATREACH]; }
     [[nodiscard]] float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
@@ -1447,6 +1444,7 @@ public:
     bool GetRandomContactPoint(Unit const* target, float& x, float& y, float& z, bool force = false) const;
     uint32 m_extraAttacks;
     bool m_canDualWield;
+    bool m_specialCharacter;
 
     void _addAttacker(Unit* pAttacker)                  // must be called only from Unit::Attack(Unit*)
     {

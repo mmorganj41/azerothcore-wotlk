@@ -116,18 +116,21 @@ bool Player::UpdateStats(Stats stat)
             break;
         case STAT_STAMINA:
             UpdateMaxHealth();
-            if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-                UpdateStats(STAT_INTELLECT);
+            if (m_specialCharacter) {
+                UpdateStats(STAT_SPIRIT);
             }
             break;
         case STAT_INTELLECT:
-            if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-                UpdateAllStats();
+            UpdateMaxPower(POWER_MANA);
+            UpdateAllSpellCritChances();
+            UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
+            if (m_specialCharacter) {
+                UpdateStats(STAT_SPIRIT);
             }
-            else {
-                UpdateMaxPower(POWER_MANA);
-                UpdateAllSpellCritChances();
-                UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
+            break;
+        case STAT_SPIRIT:
+            if (m_specialCharacter) {
+                UpdateAllStats();
             }
             break;
         default:
@@ -141,6 +144,11 @@ bool Player::UpdateStats(Stats stat)
             UpdateAttackPowerAndDamage(true);
     }
     else if (stat == STAT_AGILITY)
+    {
+        UpdateAttackPowerAndDamage(false);
+        UpdateAttackPowerAndDamage(true);
+    }
+    else if (m_specialCharacter && stat == STAT_SPIRIT)
     {
         UpdateAttackPowerAndDamage(false);
         UpdateAttackPowerAndDamage(true);
@@ -264,8 +272,8 @@ void Player::UpdateArmor()
     float value = GetModifierValue(unitMod, BASE_VALUE);   // base armor (from items)
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetStat(STAT_AGILITY) * 2.0f;                  // armor bonus from stats
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        value += GetStat(STAT_INTELLECT) * 1.0f;
+    if (m_specialCharacter) {
+        value += GetStat(STAT_SPIRIT) * 1.0f;
     }
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
@@ -304,14 +312,14 @@ float Player::GetManaBonusFromIntellect()
     return baseInt + (moreInt * 15.0f);
 }
 
-float Player::GetEnergyBonusFromIntellect()
+float Player::GetManaBonusFromSpirit()
 {
-    float intellect = GetStat(STAT_INTELLECT);
+    float spirit = GetStat(STAT_SPIRIT);
 
-    float baseInt = intellect < 10 ? intellect : 10;
-    float moreInt = intellect - baseInt;
+    float baseSpirit = spirit < 10 ? spirit : 10;
+    float moreSpirit = spirit - baseSpirit;
 
-    return baseInt + (moreInt * 7.5f);
+    return baseSpirit + (moreSpirit * 7.5f);
 }
 
 void Player::UpdateMaxHealth()
@@ -333,8 +341,8 @@ void Player::UpdateMaxPower(Powers power)
 
     float bonusPower = (power == POWER_MANA && GetCreatePowers(power) > 0) ? GetManaBonusFromIntellect() : 0;
 
-    if (power == POWER_MANA && GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        bonusPower += GetEnergyBonusFromIntellect();
+    if (power == POWER_MANA && m_specialCharacter) {
+        bonusPower += GetManaBonusFromSpirit();
     }
 
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
@@ -495,8 +503,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         }
     }
 
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        val2 += GetStat(STAT_INTELLECT) * 1.5f;
+    if (m_specialCharacter) {
+        val2 += GetStat(STAT_SPIRIT) * 1.5f;
     }
 
     SetModifierValue(unitMod, BASE_VALUE, val2);
@@ -709,8 +717,8 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
 void Player::UpdateAllCritPercentages()
 {
     float value = GetMeleeCritFromAgility();
-    if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-        value += GetMeleeCritFromIntellect();
+    if (m_specialCharacter) {
+        value += GetMeleeCritFromSpirit();
     }
 
     SetBaseModValue(CRIT_PERCENTAGE, PCT_MOD, value);
@@ -788,8 +796,8 @@ void Player::UpdateParryPercentage()
     if (CanParry() && parry_cap[pclass] > 0.0f)
     {
         float diminishing = 0.0f, nondiminishing = 0.0f;
-        if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
-            GetParryFromIntellect(diminishing, nondiminishing);
+        if (m_specialCharacter) {
+            GetParryFromSpirit(diminishing, nondiminishing);
         }
         nondiminishing  += 5.0f;
         // Parry from rating
@@ -867,6 +875,9 @@ void Player::UpdateSpellCritChance(uint32 school)
     float crit = 0.0f;
     // Crit from Intellect
     crit += GetSpellCritFromIntellect();
+    if (m_specialCharacter) {
+        crit += GetSpellCritFromSpirit();
+    }
     // Increase crit from SPELL_AURA_MOD_SPELL_CRIT_CHANCE
     crit += GetTotalAuraModifierAreaExclusive(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
     // Increase crit from SPELL_AURA_MOD_CRIT_PCT

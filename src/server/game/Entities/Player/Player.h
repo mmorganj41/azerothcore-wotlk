@@ -1904,7 +1904,7 @@ public:
 
     float GetHealthBonusFromStamina();
     float GetManaBonusFromIntellect();
-    float GetEnergyBonusFromIntellect();
+    float GetManaBonusFromSpirit();
 
     bool UpdateStats(Stats stat) override;
     bool UpdateAllStats() override;
@@ -1927,11 +1927,12 @@ public:
     void UpdateDefenseBonusesMod();
     inline void RecalculateRating(CombatRating cr) { ApplyRatingMod(cr, 0, true);}
     float GetMeleeCritFromAgility();
-    float GetMeleeCritFromIntellect();
+    float GetMeleeCritFromSpirit();
     void GetDodgeFromAgility(float& diminishing, float& nondiminishing);
-    void GetParryFromIntellect(float& diminishing, float& nondiminishing);
+    void GetParryFromSpirit(float& diminishing, float& nondiminishing);
     [[nodiscard]] float GetMissPercentageFromDefence() const;
     float GetSpellCritFromIntellect();
+    float GetSpellCritFromSpirit();
     float OCTRegenHPPerSpirit();
     float OCTRegenMPPerSpirit();
     [[nodiscard]] float GetRatingMultiplier(CombatRating cr) const;

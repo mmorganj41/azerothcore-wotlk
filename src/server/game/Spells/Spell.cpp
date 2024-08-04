@@ -3576,7 +3576,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const* targets, AuraEffect const
 
     // don't allow channeled spells / spells with cast time to be casted while moving
     // (even if they are interrupted on moving, spells with almost immediate effect get to have their effect processed before movement interrupter kicks in)
-    if ((m_spellInfo->IsChanneled() || m_casttime) && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->isMoving() && m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT && !IsTriggered() && m_caster->GetGUID().GetRawValue() != MAIN_CHARACTER)
+    if ((m_spellInfo->IsChanneled() || m_casttime) && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->isMoving() && m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT && !IsTriggered() && !m_caster->m_specialCharacter)
     {
         // 1. Has casttime, 2. Or doesn't have flag to allow action during channel
         if (m_casttime || !m_spellInfo->IsActionAllowedChannel())
@@ -4397,7 +4397,7 @@ void Spell::update(uint32 difftime)
     // check if the player caster has moved before the spell finished
     // xinef: added preparing state (real cast, skip channels as they have other flags for this)
     if ((m_caster->GetTypeId() == TYPEID_PLAYER && m_timer != 0) &&
-            m_caster->isMoving() && m_caster->GetGUID().GetRawValue() != MAIN_CHARACTER && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && m_spellState == SPELL_STATE_PREPARING &&
+            m_caster->isMoving() && !m_caster->m_specialCharacter && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && m_spellState == SPELL_STATE_PREPARING &&
             (m_spellInfo->Effects[0].Effect != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR)))
     {
         // don't cancel for melee, autorepeat, triggered and instant spells
@@ -5297,7 +5297,7 @@ void Spell::TakePower()
     if (m_caster->GetTypeId() == TYPEID_PLAYER) {
         if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_POWER))
             return;
-        if (m_caster->GetGUID().GetRawValue() == MAIN_CHARACTER) {
+        if (m_caster->m_specialCharacter) {
             if (PowerType == POWER_RAGE && m_powerCost) m_powerCost /= 3;
             PowerType = POWER_MANA;
         }
@@ -5716,7 +5716,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         {
             // Cannot be used in this stance/form
             SpellCastResult shapeError = m_spellInfo->CheckShapeshift(m_caster->GetShapeshiftForm());
-            if (shapeError != SPELL_CAST_OK && m_caster->GetGUID().GetRawValue() != MAIN_CHARACTER)
+            if (shapeError != SPELL_CAST_OK && !m_caster->m_specialCharacter)
                 return shapeError;
 
             if (m_spellInfo->HasAttribute(SPELL_ATTR0_ONLY_STEALTHED) && !(m_caster->HasStealthAura()))
@@ -5787,7 +5787,7 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     // cancel autorepeat spells if cast start when moving
     // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isMoving() && !IsTriggered())
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isMoving() && !IsTriggered() && !m_caster->m_specialCharacter)
     {
         // skip stuck spell to allow use it in falling case and apply spell limitations at movement
         if ((!m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR) || m_spellInfo->Effects[0].Effect != SPELL_EFFECT_STUCK) &&
@@ -7109,8 +7109,6 @@ SpellCastResult Spell::CheckPower()
     if (m_CastItem)
         return SPELL_CAST_OK;
 
-    bool main_character = false;
-
     //While .cheat power is enabled dont check if we need power to cast the spell
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
@@ -7118,7 +7116,6 @@ SpellCastResult Spell::CheckPower()
         {
             return SPELL_CAST_OK;
         }
-        if (m_caster->GetGUID().GetRawValue() == MAIN_CHARACTER) main_character = true;
     }
 
     // health as power used - need check health amount
@@ -7144,7 +7141,7 @@ SpellCastResult Spell::CheckPower()
     }
 
     // Check power amount
-    Powers PowerType = main_character ? POWER_MANA : Powers(m_spellInfo->PowerType);
+    Powers PowerType = m_caster->m_specialCharacter ? POWER_MANA : Powers(m_spellInfo->PowerType);
     if (int32(m_caster->GetPower(PowerType)) < m_powerCost)
         return SPELL_FAILED_NO_POWER;
     else
@@ -7254,7 +7251,7 @@ SpellCastResult Spell::CheckItems()
     {
         // Xinef: this is not true in my opinion, in eg bladestorm will not be canceled after disarm
         //if (!HasTriggeredCastFlag(TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT))
-        if (m_caster->GetTypeId() == TYPEID_PLAYER && !m_caster->ToPlayer()->HasItemFitToSpellRequirements(m_spellInfo) && m_caster->GetGUID().GetRawValue() != MAIN_CHARACTER)
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && !m_caster->ToPlayer()->HasItemFitToSpellRequirements(m_spellInfo) && !m_caster->m_specialCharacter)
             return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
     }
 
@@ -7695,7 +7692,7 @@ SpellCastResult Spell::CheckItems()
                 return SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND;
 
             // skip spell if weapon not fit to triggered spell
-            if (!item->IsFitToSpellRequirements(m_spellInfo) && m_caster->GetGUID().GetRawValue() != MAIN_CHARACTER)
+            if (!item->IsFitToSpellRequirements(m_spellInfo) && !m_caster->m_specialCharacter)
                 return SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND;
         }
 
@@ -8823,7 +8820,7 @@ void Spell::TriggerGlobalCooldown()
     }
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_COOLDOWN) || m_caster->GetGUID().GetRawValue() == MAIN_CHARACTER)
+        if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_COOLDOWN) || m_caster->m_specialCharacter)
             return;
 
     // Global cooldown can't leave range 1..1.5 secs

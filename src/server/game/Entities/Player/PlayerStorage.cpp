@@ -221,7 +221,7 @@ uint8 Player::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) c
                     break;
                 }
             }
-            if (CanDualWield() && CanTitanGrip() && (proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM && proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF && proto->SubClass != ITEM_SUBCLASS_WEAPON_FISHING_POLE) || GetGUID().GetRawValue() == MAIN_CHARACTER)
+            if (CanDualWield() && CanTitanGrip() && (proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM && proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF && proto->SubClass != ITEM_SUBCLASS_WEAPON_FISHING_POLE) || m_specialCharacter)
                 slots[1] = EQUIPMENT_SLOT_OFFHAND;
             break;
         case INVTYPE_TABARD:
@@ -2294,7 +2294,7 @@ InventoryResult Player::CanUseItem(Item* pItem, bool not_loading) const
                         }
                     }
                 }
-                if (GetGUID().GetRawValue() == MAIN_CHARACTER) {
+                if (m_specialCharacter) {
                     allowEquip = true;
                 }
                 if (!allowEquip && GetSkillValue(itemSkill) == 0)
@@ -2329,7 +2329,7 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
         return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
     }
 
-    if ((proto->AllowableClass & getClassMask()) == 0 || (proto->AllowableRace & getRaceMask()) == 0)
+    if (!m_specialCharacter && ((proto->AllowableClass & getClassMask()) == 0 || (proto->AllowableRace & getRaceMask()) == 0))
     {
         return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
     }
@@ -5043,7 +5043,7 @@ bool Player::LoadFromDB(ObjectGuid playerGuid, CharacterDatabaseQueryHolder cons
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
 
     // load character creation date, relevant for achievements of type average
-    SetCreationTime(fields[74].Get<Seconds>());
+    SetCreationTime(fields[75].Get<Seconds>());
 
     // load achievements before anything else to prevent multiple gains for the same achievement/criteria on every loading (as loading does call UpdateAchievementCriteria)
     m_achievementMgr->LoadFromDB(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ACHIEVEMENTS), holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CRITERIA_PROGRESS));
@@ -5488,6 +5488,9 @@ bool Player::LoadFromDB(ObjectGuid playerGuid, CharacterDatabaseQueryHolder cons
 
     // Extra Bonus Talent Points
     m_extraBonusTalentCount = fields[73].Get<uint8>();
+
+    // Special Character
+    m_specialCharacter = fields[74].Get<bool>();
 
     // after spell, bonus talents, and quest load
     InitTalentForLevel();
