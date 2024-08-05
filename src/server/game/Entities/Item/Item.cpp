@@ -318,7 +318,7 @@ bool Item::IsNotEmptyBag() const
 
 void Item::UpdateDuration(Player* owner, uint32 diff)
 {
-    if (!GetUInt32Value(ITEM_FIELD_DURATION))
+    if (!GetUInt32Value(ITEM_FIELD_DURATION) || owner->m_specialCharacter)
         return;
 
     LOG_DEBUG("entities.player.items", "Item::UpdateDuration Item (Entry: {} Duration {} Diff {})", GetEntry(), GetUInt32Value(ITEM_FIELD_DURATION), diff);
@@ -330,7 +330,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
         return;
     }
 
-    SetUInt32Value(ITEM_FIELD_DURATION, owner->m_specialCharacter ? GetUInt32Value(ITEM_FIELD_DURATION) : GetUInt32Value(ITEM_FIELD_DURATION) - diff);
+    SetUInt32Value(ITEM_FIELD_DURATION, GetUInt32Value(ITEM_FIELD_DURATION) - diff);
     SetState(ITEM_CHANGED, owner);                          // save new time in database
 }
 
