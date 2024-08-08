@@ -5298,7 +5298,11 @@ void Spell::TakePower()
         if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_POWER))
             return;
         if (m_caster->m_specialCharacter) {
-            if (PowerType == POWER_RAGE && m_powerCost) m_powerCost /= 3;
+            if (PowerType == POWER_ENERGY) {
+                m_powerCost = int32(CalculatePct(m_caster->GetCreateMana(), m_powerCost / 3));
+            } else if (PowerType == POWER_RAGE) {
+                m_powerCost = int32(CalculatePct(m_caster->GetCreateMana(), m_powerCost / 10));
+            }
             PowerType = POWER_MANA;
         }
     }

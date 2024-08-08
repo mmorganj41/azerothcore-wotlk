@@ -537,7 +537,7 @@ Item* Player::GetWeaponForAttack(WeaponAttackType attackType, bool useable /*= f
     if (!useable)
         return item;
 
-    if (item->IsBroken() || IsInFeralForm())
+    if (item->IsBroken() || (IsInFeralForm() && !m_specialCharacter))
         return nullptr;
 
     return item;

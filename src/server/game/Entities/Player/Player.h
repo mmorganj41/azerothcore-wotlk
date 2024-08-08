@@ -1929,7 +1929,7 @@ public:
     float GetMeleeCritFromAgility();
     float GetMeleeCritFromSpirit();
     void GetDodgeFromAgility(float& diminishing, float& nondiminishing);
-    void GetParryFromSpirit(float& diminishing, float& nondiminishing);
+    float GetBlockFromSpirit();
     [[nodiscard]] float GetMissPercentageFromDefence() const;
     float GetSpellCritFromIntellect();
     float GetSpellCritFromSpirit();

@@ -2273,7 +2273,7 @@ bool Aura::IsProcTriggeredOnEvent(AuraApplication* aurApp, ProcEventInfo& eventI
             Item* item = nullptr;
             if (GetSpellInfo()->EquippedItemClass == ITEM_CLASS_WEAPON)
             {
-                if (target->ToPlayer()->IsInFeralForm())
+                if (target->ToPlayer()->IsInFeralForm() && !target->m_specialCharacter)
                     return false;
 
                 if (DamageInfo const* damageInfo = eventInfo.GetDamageInfo())

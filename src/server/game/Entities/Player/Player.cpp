@@ -5135,13 +5135,13 @@ void Player::GetDodgeFromAgility(float& diminishing, float& nondiminishing)
     nondiminishing = 100.0f * (dodge_base[pclass - 1] + base_agility * dodgeRatio->ratio * crit_to_dodge[pclass - 1]);
 }
 
-void Player::GetParryFromSpirit(float& diminishing, float& nondiminishing)
+float Player::GetBlockFromSpirit()
 {
     // Table for base parry values
     const float parry_base[MAX_CLASSES] =
     {
         0.036640f, // Warrior
-        0.034943f, // Paladi
+        0.034943f, // Paladin
         -0.040873f, // Hunter
         0.020957f, // Rogue
         0.034178f, // Priest
@@ -5177,15 +5177,14 @@ void Player::GetParryFromSpirit(float& diminishing, float& nondiminishing)
     // parry per intellect is proportional to crit per intellect, which is available from DBC files
     GtChanceToMeleeCritEntry  const* parryRatio = sGtChanceToMeleeCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
     if (!parryRatio || pclass > MAX_CLASSES)
-        return;
+        return 0.0f;
 
     /// @todo: research if talents/effects that increase total intellect by x% should increase non-diminishing part
     float base_spirit = GetCreateStat(STAT_SPIRIT) * m_auraModifiersGroup[UNIT_MOD_STAT_START + static_cast<uint16>(STAT_SPIRIT)][BASE_PCT];
     float bonus_spirit = GetStat(STAT_SPIRIT) - base_spirit;
 
     // calculate diminishing (green in char screen) and non-diminishing (white) contribution
-    diminishing = 25.0f * bonus_spirit * parryRatio->ratio * crit_to_parry[pclass - 1];
-    nondiminishing = 25.0f * (parry_base[pclass - 1] + base_spirit * parryRatio->ratio * crit_to_parry[pclass - 1]);
+    return 25.0f * (bonus_spirit * parryRatio->ratio * crit_to_parry[pclass - 1] + (parry_base[pclass - 1] + base_spirit * parryRatio->ratio * crit_to_parry[pclass - 1]));
 }
 
 float Player::GetSpellCritFromIntellect()
@@ -7019,7 +7018,7 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
         }
     }
 
-    if (proto->Delay && !IsInFeralForm())
+    if (proto->Delay && (!IsInFeralForm() || m_specialCharacter))
     {
         if (slot == EQUIPMENT_SLOT_RANGED)
             SetAttackTime(RANGED_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
@@ -7030,7 +7029,7 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
     }
 
     // No need to modify any physical damage for ferals as it is calculated from stats only
-    if (IsInFeralForm())
+    if (IsInFeralForm() && !m_specialCharacter)
         return;
 
     if (CanModifyStats() && (GetWeaponDamageRange(WeaponAttackType(attType), MAXDAMAGE) || proto->Delay))
@@ -7210,7 +7209,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
             return;
 
         // Cannot be used in this stance/form
-        if (spellInfo->CheckShapeshift(GetShapeshiftForm()) != SPELL_CAST_OK)
+        if (spellInfo->CheckShapeshift(GetShapeshiftForm()) != SPELL_CAST_OK && !m_specialCharacter)
             return;
 
         if (form_change)                                    // check aura active state from other form
@@ -10629,7 +10628,7 @@ void Player::InitDataForForm(bool reapplyMods)
     ShapeshiftForm form = GetShapeshiftForm();
 
     SpellShapeshiftFormEntry const* ssEntry = sSpellShapeshiftFormStore.LookupEntry(form);
-    if (ssEntry && ssEntry->attackSpeed)
+    if (ssEntry && ssEntry->attackSpeed && !m_specialCharacter)
     {
         SetAttackTime(BASE_ATTACK, ssEntry->attackSpeed);
         SetAttackTime(OFF_ATTACK, ssEntry->attackSpeed);
@@ -10643,14 +10642,14 @@ void Player::InitDataForForm(bool reapplyMods)
         case FORM_GHOUL:
         case FORM_CAT:
             {
-                if (getPowerType() != POWER_ENERGY)
+                if (!m_specialCharacter && getPowerType() != POWER_ENERGY)
                     setPowerType(POWER_ENERGY);
                 break;
             }
         case FORM_BEAR:
         case FORM_DIREBEAR:
             {
-                if (getPowerType() != POWER_RAGE)
+                if (!m_specialCharacter && getPowerType() != POWER_RAGE)
                     setPowerType(POWER_RAGE);
                 break;
             }

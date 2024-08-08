@@ -108,31 +108,19 @@ bool Player::UpdateStats(Stats stat)
     {
         case STAT_STRENGTH:
             UpdateShieldBlockValue();
-            if (m_specialCharacter) {
-                UpdateStats(STAT_SPIRIT);
-            }
             break;
         case STAT_AGILITY:
             UpdateArmor();
             UpdateAllCritPercentages();
             UpdateDodgePercentage();
-            if (m_specialCharacter) {
-                UpdateStats(STAT_SPIRIT);
-            }
             break;
         case STAT_STAMINA:
             UpdateMaxHealth();
-            if (m_specialCharacter) {
-                UpdateStats(STAT_SPIRIT);
-            }
             break;
         case STAT_INTELLECT:
             UpdateMaxPower(POWER_MANA);
             UpdateAllSpellCritChances();
             UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
-            if (m_specialCharacter) {
-                UpdateStats(STAT_SPIRIT);
-            }
             break;
         case STAT_SPIRIT:
             if (m_specialCharacter) {
@@ -279,7 +267,7 @@ void Player::UpdateArmor()
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetStat(STAT_AGILITY) * 2.0f;                  // armor bonus from stats
     if (m_specialCharacter) {
-        value += GetStat(STAT_SPIRIT) * 1.0f;
+        value += GetStat(STAT_SPIRIT) * 0.5f;
     }
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
@@ -325,7 +313,7 @@ float Player::GetManaBonusFromSpirit()
     float baseSpirit = spirit < 10 ? spirit : 10;
     float moreSpirit = spirit - baseSpirit;
 
-    return baseSpirit + (moreSpirit * 7.5f);
+    return baseSpirit + (moreSpirit * 2.5f);
 }
 
 void Player::UpdateMaxHealth()
@@ -510,7 +498,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     }
 
     if (m_specialCharacter) {
-        val2 += GetStat(STAT_SPIRIT) * 1.5f;
+        val2 += GetStat(STAT_SPIRIT) * 1.0f;
     }
 
     SetModifierValue(unitMod, BASE_VALUE, val2);
@@ -667,7 +655,7 @@ void Player::UpdateBlockPercentage()
         // Modify value from defense skill
         value += (int32(GetDefenseSkillValue()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
         if (m_specialCharacter) {
-            value += 0.1f * GetStat(STAT_SPIRIT) / GetLevel();
+            value += GetBlockFromSpirit();
         }
         // Increase from SPELL_AURA_MOD_BLOCK_PERCENT aura
         value += GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
@@ -804,13 +792,9 @@ void Player::UpdateParryPercentage()
     uint32 pclass = getClass() - 1;
     if ((CanParry() && parry_cap[pclass] > 0.0f) || m_specialCharacter)
     {
-        float diminishing = 0.0f, nondiminishing = 0.0f;
-        if (m_specialCharacter) {
-            GetParryFromSpirit(diminishing, nondiminishing);
-        }
-        nondiminishing  += 5.0f;
+        float nondiminishing  = 5.0f;
         // Parry from rating
-        diminishing += GetRatingBonusValue(CR_PARRY);
+        float diminishing = GetRatingBonusValue(CR_PARRY);
         // Modify value from defense skill (only bonus from defense rating diminishes)
         nondiminishing += (GetSkillValue(SKILL_DEFENSE) - GetMaxSkillValueForLevel()) * 0.04f;
         diminishing += (int32(GetRatingBonusValue(CR_DEFENSE_SKILL))) * 0.04f;

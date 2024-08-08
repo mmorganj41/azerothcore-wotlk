@@ -1920,6 +1920,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             LOG_ERROR("spells.aura.effect", "Auras: Unknown Shapeshift Type: {}", GetMiscValue());
     }
 
+    if (target->m_specialCharacter) PowerType = POWER_MANA;
+
     modelid = target->GetModelForForm(form, GetId());
 
     if (apply)
