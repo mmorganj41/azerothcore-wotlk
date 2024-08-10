@@ -76,6 +76,16 @@ uint32 Acore::XP::Gain(Player* player, Unit* unit, bool isBattleGround /*= false
     if (!creature || (!creature->IsTotem() && !creature->IsPet() && !creature->IsCritter() &&
         !(creature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP)))
     {
+
+        if (player->m_specialCharacter) {
+            if (creature && creature->GetCreatureTemplate()->rank != CREATURE_ELITE_NORMAL) {
+                // count the number of playerkills in one day
+                player->ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
+                // and those in a lifetime
+                player->ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
+            }
+        }
+
         float xpMod = 1.0f;
 
         gain = BaseGain(player->GetLevel(), unit->GetLevel(), GetContentLevelsForMapAndZone(unit->GetMapId(), unit->GetZoneId()));

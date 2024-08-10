@@ -15263,7 +15263,7 @@ float Unit::GetTotalStatValue(Stats stat, float additionalValue) const
     // value = ((base_value * base_pct) + total_value) * total_pct
     float value  = m_auraModifiersGroup[unitMod][BASE_VALUE] + GetCreateStat(stat);
     if (stat == STAT_SPIRIT && m_specialCharacter) {
-        value += 0.333f * m_uint32Values[PLAYER_FIELD_LIFETIME_HONORABLE_KILLS];
+        value += 0.2f * m_uint32Values[PLAYER_FIELD_LIFETIME_HONORABLE_KILLS];
     }
 
     value *= m_auraModifiersGroup[unitMod][BASE_PCT];

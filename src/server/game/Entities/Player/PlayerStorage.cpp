@@ -5354,6 +5354,9 @@ bool Player::LoadFromDB(ObjectGuid playerGuid, CharacterDatabaseQueryHolder cons
     // this must help in case next save after mass player load after server startup
     m_nextSave = urand(m_nextSave / 2, m_nextSave * 3 / 2);
 
+    // Special Character
+    m_specialCharacter = fields[74].Get<bool>();
+
     // set value, including drunk invisibility detection
     // calculate sobering. after 15 minutes logged out, the player will be sober again
     uint8 newDrunkValue = 0;
@@ -5409,7 +5412,7 @@ bool Player::LoadFromDB(ObjectGuid playerGuid, CharacterDatabaseQueryHolder cons
 
     // reset some aura modifiers before aura apply
     SetUInt32Value(PLAYER_TRACK_CREATURES, 0);
-    SetUInt32Value(PLAYER_TRACK_RESOURCES, 0);
+    SetUInt32Value(PLAYER_TRACK_RESOURCES, m_specialCharacter ? 63: 0);
 
     // make sure the unit is considered not in duel for proper loading
     SetGuidValue(PLAYER_DUEL_ARBITER, ObjectGuid::Empty);
@@ -5488,9 +5491,6 @@ bool Player::LoadFromDB(ObjectGuid playerGuid, CharacterDatabaseQueryHolder cons
 
     // Extra Bonus Talent Points
     m_extraBonusTalentCount = fields[73].Get<uint8>();
-
-    // Special Character
-    m_specialCharacter = fields[74].Get<bool>();
 
     // after spell, bonus talents, and quest load
     InitTalentForLevel();
